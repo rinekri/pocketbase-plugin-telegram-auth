@@ -1,5 +1,5 @@
-[![Test](https://github.com/iamelevich/pocketbase-plugin-telegram-auth/actions/workflows/test.yml/badge.svg)](https://github.com/iamelevich/pocketbase-plugin-telegram-auth/actions/workflows/test.yml)
-[![codecov](https://codecov.io/github/iamelevich/pocketbase-plugin-telegram-auth/graph/badge.svg?token=X91VFOND6D)](https://codecov.io/github/iamelevich/pocketbase-plugin-telegram-auth)
+[![Test](https://github.com/rinekri/pocketbase-plugin-telegram-auth/actions/workflows/test.yml/badge.svg)](https://github.com/rinekri/pocketbase-plugin-telegram-auth/actions/workflows/test.yml)
+[![codecov](https://codecov.io/github/rinekri/pocketbase-plugin-telegram-auth/graph/badge.svg?token=X91VFOND6D)](https://codecov.io/github/rinekri/pocketbase-plugin-telegram-auth)
 
 <!-- TOC -->
 - [Overview](#overview)
@@ -31,15 +31,17 @@
 
 This plugin implements [Telegram WebApp Auth](https://core.telegram.org/bots/webapps#validating-data-received-via-the-web-app) and [Telegram Login Widget](https://core.telegram.org/widgets/login) for the [pocketbase](https://github.com/pocketbase/pocketbase)
 
+Originally was created by [iamelevich](https://github.com/iamelevich/), but wasn't updated to fresh versions of Pocketbase.
+
 ## Requirements
 
 - Go 1.18+
-- [Pocketbase](https://github.com/pocketbase/pocketbase) 0.12+
+- [Pocketbase](https://github.com/pocketbase/pocketbase) 0.23+
 
 ## Installation
 
 ```bash
-go get github.com/iamelevich/pocketbase-plugin-telegram-auth
+go get github.com/rinekri/pocketbase-plugin-telegram-auth
 ```
 
 ## Autofill fields
@@ -61,7 +63,7 @@ You can check examples in [examples folder](/examples)
 package main
 
 import (
-	tgAuthPlugin "github.com/iamelevich/pocketbase-plugin-telegram-auth"
+	tgAuthPlugin "github.com/rinekri/pocketbase-plugin-telegram-auth"
 	"log"
 
 	"github.com/pocketbase/pocketbase"
@@ -106,7 +108,7 @@ pb.send('/api/collections/users/auth-with-telegram', {
 # pocketbase\_plugin\_telegram\_auth
 
 ```go
-import "github.com/iamelevich/pocketbase-plugin-telegram-auth"
+import "github.com/rinekri/pocketbase-plugin-telegram-auth"
 ```
 
 ## Index

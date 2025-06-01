@@ -1,7 +1,7 @@
 package main
 
 import (
-	tgAuthPlugin "github.com/iamelevich/pocketbase-plugin-telegram-auth"
+	tgAuthPlugin "github.com/rinekri/pocketbase-plugin-telegram-auth"
 	"log"
 
 	"github.com/pocketbase/pocketbase"

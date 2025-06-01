@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/iamelevich/pocketbase-plugin-telegram-auth/forms"
+	"github.com/rinekri/pocketbase-plugin-telegram-auth/forms"
 	"github.com/pocketbase/pocketbase/tests"
 	"github.com/pocketbase/pocketbase/tools/auth"
 )
@@ -54,7 +54,7 @@ func TestUserTelegramLoginValidate(t *testing.T) {
 	}
 
 	for _, s := range scenarios {
-		authCollection, _ := app.Dao().FindCollectionByNameOrId(s.collectionName)
+		authCollection, _ := app.FindCollectionByNameOrId(s.collectionName)
 		if authCollection == nil {
 			t.Errorf("[%s] Failed to fetch auth collection", s.testName)
 		}
@@ -136,7 +136,7 @@ func TestUserTelegramGetDataParsed(t *testing.T) {
 	}
 
 	for _, s := range scenarios {
-		authCollection, _ := app.Dao().FindCollectionByNameOrId(s.collectionName)
+		authCollection, _ := app.FindCollectionByNameOrId(s.collectionName)
 		if authCollection == nil {
 			t.Errorf("[%s] Failed to fetch auth collection", s.testName)
 		}
