@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.15.1](https://github.com/rinekri/pocketbase-plugin-telegram-auth/compare/v0.15.0...v0.15.1) (2025-06-09)
+
+
+### Bug Fixes
+
+* rename Plugin struct and related function ([83ae372](https://github.com/rinekri/pocketbase-plugin-telegram-auth/commit/83ae372ba1f0b77cd061d03c8fa306a901cd202b))
+* rename Plugin struct and related function ([0f1a388](https://github.com/rinekri/pocketbase-plugin-telegram-auth/commit/0f1a388bba3b82be5117a2514ece48a638fc9a97))
+
 ## [0.15.0](https://github.com/rinekri/pocketbase-plugin-telegram-auth/compare/v0.14.4...v0.15.0) (2025-06-01)
 
 
