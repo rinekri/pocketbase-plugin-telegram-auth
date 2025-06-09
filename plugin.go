@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/rinekri/pocketbase-plugin-telegram-auth/forms"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	pbForms "github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/tools/auth"
 	"github.com/pocketbase/pocketbase/tools/search"
+	"github.com/rinekri/pocketbase-plugin-telegram-auth/forms"
 )
 
 // Options defines optional struct to customize the default plugin behavior.
@@ -96,6 +96,25 @@ func MustRegister(app core.App, options *Options) *Plugin {
 
 // Register plugin in PocketBase app.
 func Register(app core.App, options *Options) (*Plugin, error) {
+	p, err := CreateAndValidatePlugin(app, options)
+
+	if err != nil {
+		return p, err
+	}
+
+	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		e.Router.POST(
+			"/api/collections/"+p.options.CollectionKey+"/auth-with-telegram",
+			p.AuthHandler,
+		)
+
+		return e.Next()
+	})
+
+	return p, nil
+}
+
+func CreateAndValidatePlugin(app core.App, options *Options) (*Plugin, error) {
 	p := &Plugin{app: app}
 
 	// Set default options
@@ -109,80 +128,72 @@ func Register(app core.App, options *Options) (*Plugin, error) {
 	if err := p.Validate(); err != nil {
 		return p, err
 	}
-
-	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
-		e.Router.POST(
-			"/api/collections/"+p.options.CollectionKey+"/auth-with-telegram",
-			func(c *core.RequestEvent) error {
-				collection, findCollectionErr := p.GetCollection()
-				if findCollectionErr != nil {
-					return apis.NewNotFoundError("Collection not found", findCollectionErr)
-				}
-
-				var fallbackAuthRecord *core.Record
-				loggedAuthRecord := c.Auth
-				if loggedAuthRecord != nil && loggedAuthRecord.Collection().Id == collection.Id {
-					fallbackAuthRecord = loggedAuthRecord
-				}
-
-				form, getFormErr := p.GetForm(fallbackAuthRecord)
-				if getFormErr != nil {
-					return apis.NewBadRequestError(getFormErr.Error(), getFormErr)
-				}
-				if readErr := c.BindBody(form); readErr != nil {
-					return apis.NewBadRequestError("An error occurred while loading the submitted data.", readErr)
-				}
-
-				record, authData, submitErr := form.Submit(
-					func(createForm *pbForms.RecordUpsert, authRecord *core.Record, authUser *auth.AuthUser) error {
-						return createForm.DrySubmit(func(txApp core.App, drySavedRecord *core.Record) error {
-							requestInfo, _ := c.RequestInfo()
-							requestInfo.Body = form.CreateData
-
-							createRuleFunc := func(q *dbx.SelectQuery) error {
-								admin := c.Auth
-
-								if admin != nil && admin.IsSuperuser() {
-									return nil // either admin or the rule is empty
-								}
-
-								if collection.CreateRule == nil {
-									return errors.New("Only admins can create new accounts with OAuth2")
-								}
-
-								if *collection.CreateRule != "" {
-									resolver := core.NewRecordFieldResolver(c.App, collection, requestInfo, true)
-									if expr, err := search.FilterData(*collection.CreateRule).BuildExpr(resolver); err != nil {
-										return err
-									} else {
-										if updateQueryError := resolver.UpdateQuery(q); updateQueryError != nil {
-											return updateQueryError
-										}
-										q.AndWhere(expr)
-									}
-								}
-
-								return nil
-							}
-
-							if _, err := txApp.FindRecordById(collection.Id, authRecord.Id, createRuleFunc); err != nil {
-								return fmt.Errorf("Failed create rule constraint: %w", err)
-							}
-
-							return nil
-						})
-					})
-
-				if submitErr != nil {
-					return apis.NewBadRequestError("Failed to authenticate.", submitErr)
-				}
-
-				return apis.RecordAuthResponse(c, record, core.MFAMethodOAuth2, authData)
-			},
-		)
-
-		return e.Next()
-	})
-
 	return p, nil
+}
+
+func (p *Plugin) AuthHandler(c *core.RequestEvent) error {
+	collection, findCollectionErr := p.GetCollection()
+	if findCollectionErr != nil {
+		return apis.NewNotFoundError("Collection not found", findCollectionErr)
+	}
+
+	var fallbackAuthRecord *core.Record
+	loggedAuthRecord := c.Auth
+	if loggedAuthRecord != nil && loggedAuthRecord.Collection().Id == collection.Id {
+		fallbackAuthRecord = loggedAuthRecord
+	}
+
+	form, getFormErr := p.GetForm(fallbackAuthRecord)
+	if getFormErr != nil {
+		return apis.NewBadRequestError(getFormErr.Error(), getFormErr)
+	}
+	if readErr := c.BindBody(form); readErr != nil {
+		return apis.NewBadRequestError("An error occurred while loading the submitted data.", readErr)
+	}
+
+	record, authData, submitErr := form.Submit(
+		func(createForm *pbForms.RecordUpsert, authRecord *core.Record, authUser *auth.AuthUser) error {
+			return createForm.DrySubmit(func(txApp core.App, drySavedRecord *core.Record) error {
+				requestInfo, _ := c.RequestInfo()
+				requestInfo.Body = form.CreateData
+
+				createRuleFunc := func(q *dbx.SelectQuery) error {
+					admin := c.Auth
+
+					if admin != nil && admin.IsSuperuser() {
+						return nil // either admin or the rule is empty
+					}
+
+					if collection.CreateRule == nil {
+						return errors.New("Only admins can create new accounts with OAuth2")
+					}
+
+					if *collection.CreateRule != "" {
+						resolver := core.NewRecordFieldResolver(c.App, collection, requestInfo, true)
+						if expr, err := search.FilterData(*collection.CreateRule).BuildExpr(resolver); err != nil {
+							return err
+						} else {
+							if updateQueryError := resolver.UpdateQuery(q); updateQueryError != nil {
+								return updateQueryError
+							}
+							q.AndWhere(expr)
+						}
+					}
+
+					return nil
+				}
+
+				if _, err := txApp.FindRecordById(collection.Id, authRecord.Id, createRuleFunc); err != nil {
+					return fmt.Errorf("Failed create rule constraint: %w", err)
+				}
+
+				return nil
+			})
+		})
+
+	if submitErr != nil {
+		return apis.NewBadRequestError("Failed to authenticate.", submitErr)
+	}
+
+	return apis.RecordAuthResponse(c, record, core.MFAMethodOAuth2, authData)
 }
