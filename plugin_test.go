@@ -81,7 +81,7 @@ func TestPlugin_Validate(t *testing.T) {
 	}
 	for _, tt := range scenarios {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &Plugin{
+			p := &PluginContext{
 				app:     tt.fields.app,
 				options: tt.fields.options,
 			}
@@ -147,7 +147,7 @@ func TestPlugin_GetCollection(t *testing.T) {
 	}
 	for _, tt := range scenarios {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &Plugin{
+			p := &PluginContext{
 				app:        tt.fields.app,
 				options:    tt.fields.options,
 				collection: tt.fields.collection,
@@ -210,7 +210,7 @@ func TestPlugin_GetForm(t *testing.T) {
 	}
 	for _, tt := range scenarios {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &Plugin{
+			p := &PluginContext{
 				app:     tt.fields.app,
 				options: tt.fields.options,
 			}

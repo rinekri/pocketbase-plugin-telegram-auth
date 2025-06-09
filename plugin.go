@@ -23,14 +23,14 @@ type Options struct {
 	CollectionKey string
 }
 
-type Plugin struct {
+type PluginContext struct {
 	app        core.App
 	options    *Options
 	collection *core.Collection
 }
 
 // Validate plugin options. Return error if some option is invalid.
-func (p *Plugin) Validate() error {
+func (p *PluginContext) Validate() error {
 	if p.options == nil {
 		return fmt.Errorf("options is required")
 	}
@@ -47,7 +47,7 @@ func (p *Plugin) Validate() error {
 }
 
 // GetCollection returns PocketBase collection object for collection with name or id from options.CollectionKey.
-func (p *Plugin) GetCollection() (*core.Collection, error) {
+func (p *PluginContext) GetCollection() (*core.Collection, error) {
 	// If collection object stored in plugin - return it
 	if p.collection != nil {
 		return p.collection, nil
@@ -63,7 +63,7 @@ func (p *Plugin) GetCollection() (*core.Collection, error) {
 }
 
 // GetForm returns Telegram login form for collection with name or id from options.CollectionKey.
-func (p *Plugin) GetForm(optAuthRecord *core.Record) (*forms.RecordTelegramLogin, error) {
+func (p *PluginContext) GetForm(optAuthRecord *core.Record) (*forms.RecordTelegramLogin, error) {
 	collection, findCollectionErr := p.GetCollection()
 	if findCollectionErr != nil {
 		return nil, findCollectionErr
@@ -76,7 +76,7 @@ func (p *Plugin) GetForm(optAuthRecord *core.Record) (*forms.RecordTelegramLogin
 }
 
 // AuthByTelegramData returns auth record and auth user by Telegram data.
-func (p *Plugin) AuthByTelegramData(tgData forms.TelegramData) (*core.Record, *auth.AuthUser, error) {
+func (p *PluginContext) AuthByTelegramData(tgData forms.TelegramData) (*core.Record, *auth.AuthUser, error) {
 	form, err := p.GetForm(nil)
 	if err != nil {
 		return nil, nil, err
@@ -86,7 +86,7 @@ func (p *Plugin) AuthByTelegramData(tgData forms.TelegramData) (*core.Record, *a
 }
 
 // MustRegister is a helper function to register plugin and panic if error occurred.
-func MustRegister(app core.App, options *Options) *Plugin {
+func MustRegister(app core.App, options *Options) *PluginContext {
 	if p, err := Register(app, options); err != nil {
 		panic(err)
 	} else {
@@ -95,8 +95,8 @@ func MustRegister(app core.App, options *Options) *Plugin {
 }
 
 // Register plugin in PocketBase app.
-func Register(app core.App, options *Options) (*Plugin, error) {
-	p, err := CreateAndValidatePlugin(app, options)
+func Register(app core.App, options *Options) (*PluginContext, error) {
+	p, err := CreateAndValidatePluginContext(app, options)
 
 	if err != nil {
 		return p, err
@@ -114,8 +114,8 @@ func Register(app core.App, options *Options) (*Plugin, error) {
 	return p, nil
 }
 
-func CreateAndValidatePlugin(app core.App, options *Options) (*Plugin, error) {
-	p := &Plugin{app: app}
+func CreateAndValidatePluginContext(app core.App, options *Options) (*PluginContext, error) {
+	p := &PluginContext{app: app}
 
 	// Set default options
 	if options != nil {
@@ -131,7 +131,7 @@ func CreateAndValidatePlugin(app core.App, options *Options) (*Plugin, error) {
 	return p, nil
 }
 
-func (p *Plugin) AuthHandler(c *core.RequestEvent) error {
+func (p *PluginContext) AuthHandler(c *core.RequestEvent) error {
 	collection, findCollectionErr := p.GetCollection()
 	if findCollectionErr != nil {
 		return apis.NewNotFoundError("Collection not found", findCollectionErr)
