@@ -96,6 +96,9 @@ func (form *RecordTelegramLogin) checkTelegramData(value any) error {
 
 // checkTelegramAuthorization data param. Check https://core.telegram.org/bots/webapps#validating-data-received-via-the-web-app
 func (form *RecordTelegramLogin) checkTelegramAuthorization(data string) (bool, error) {
+
+	form.app.Logger().Info("checkTelegramAuthorization", slog.Any("data", data))
+
 	// Parse string
 	params, err := url.ParseQuery(data)
 	if err != nil {
