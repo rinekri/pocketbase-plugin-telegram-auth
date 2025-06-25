@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.15.5](https://github.com/rinekri/pocketbase-plugin-telegram-auth/compare/v0.15.4...v0.15.5) (2025-06-25)
+
+
+### Bug Fixes
+
+* add logs for telegram data ([41de6f8](https://github.com/rinekri/pocketbase-plugin-telegram-auth/commit/41de6f8726867fe0e13ded6b9f92b7c49a5071aa))
+* add logs for telegram data ([b1322ac](https://github.com/rinekri/pocketbase-plugin-telegram-auth/commit/b1322acc20da50cc6e72a3b4971217064a39cbd0))
+
 ## [0.15.4](https://github.com/rinekri/pocketbase-plugin-telegram-auth/compare/v0.15.3...v0.15.4) (2025-06-25)
 
 
