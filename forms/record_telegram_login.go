@@ -251,14 +251,12 @@ func (form *RecordTelegramLogin) SubmitWithTelegramData(
 		"photo_url":     tgData.PhotoUrl,
 	}
 
-	form.app.Logger().Info("SubmitWithTelegramData: authUser.RawUser", slog.Any("createData", form.CreateData))
-
 	authUser.Id = strconv.FormatInt(tgData.Id, 10)
 	authUser.Username = tgData.Username
 	authUser.Name = strings.TrimSpace(tgData.FirstName + " " + tgData.LastName)
 	authUser.AvatarUrl = tgData.PhotoUrl
 
-	form.app.Logger().Info("SubmitWithTelegramData: authUser %s", slog.Any("authUser", authUser))
+	form.app.Logger().Info("SubmitWithTelegramData: authUser", slog.Any("authUser", authUser))
 
 	// Set CreateData
 	form.CreateData = map[string]any{
@@ -270,7 +268,7 @@ func (form *RecordTelegramLogin) SubmitWithTelegramData(
 		"language_code":     tgData.LanguageCode,
 	}
 
-	form.app.Logger().Info("SubmitWithTelegramData: form.CreateData %s", slog.Any("createData", form.CreateData))
+	form.app.Logger().Info("SubmitWithTelegramData: form.CreateData", slog.Any("createData", form.CreateData))
 
 	return form.submitWithAuthUser(&authUser, beforeCreateFuncs...)
 }
@@ -283,14 +281,35 @@ func (form *RecordTelegramLogin) submitWithAuthUser(
 	var err error
 
 	// check for existing relation with the auth record
+	form.app.Logger().Info("FindFirstExternalAuthByExpr start", slog.String("authUser.Id", authUser.Id))
 	rel, _ := form.app.FindFirstExternalAuthByExpr(dbx.HashExp{"provider": "telegram", "providerId": authUser.Id})
 	if rel != nil {
-		authRecord, err = form.app.FindRecordById(form.collection.Id, rel.Id)
+		authRecord, err = form.app.FindRecordById(form.collection.Id, rel.RecordRef())
+		form.app.Logger().Info(
+			"FindFirstExternalAuthByExpr success",
+			slog.
+				Group(
+					"authUser.Id",
+					slog.String("form.collection.Id", form.collection.Id),
+					slog.String("rel.id", rel.Id),
+					slog.String("rel.RecordRef()", rel.RecordRef()),
+				),
+		)
 		if err != nil {
+			form.app.Logger().Info("FindFirstExternalAuthByExpr FindRecordById error", slog.Any("error", err))
 			return nil, authUser, err
 		}
 	} else {
 		// Try to find record by telegram_id field if exists
+		form.app.Logger().Info(
+			"FindFirstExternalAuthByExpr error",
+			slog.
+				Group(
+					"params",
+					slog.String("form.collection.Id", form.collection.Id),
+					slog.String("telegram_id", authUser.Id),
+				),
+		)
 		authRecord, _ = form.app.FindFirstRecordByData(form.collection.Id, "telegram_id", authUser.Id)
 	}
 
