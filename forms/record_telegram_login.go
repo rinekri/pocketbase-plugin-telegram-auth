@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"hash"
 	"io"
+	"log/slog"
 	"net/url"
 	"sort"
 	"strconv"
@@ -250,10 +251,14 @@ func (form *RecordTelegramLogin) SubmitWithTelegramData(
 		"photo_url":     tgData.PhotoUrl,
 	}
 
+	form.app.Logger().Info("SubmitWithTelegramData: authUser.RawUser", slog.Any("createData", form.CreateData))
+
 	authUser.Id = strconv.FormatInt(tgData.Id, 10)
 	authUser.Username = tgData.Username
 	authUser.Name = strings.TrimSpace(tgData.FirstName + " " + tgData.LastName)
 	authUser.AvatarUrl = tgData.PhotoUrl
+
+	form.app.Logger().Info("SubmitWithTelegramData: authUser %s", slog.Any("authUser", authUser))
 
 	// Set CreateData
 	form.CreateData = map[string]any{
@@ -264,6 +269,8 @@ func (form *RecordTelegramLogin) SubmitWithTelegramData(
 		"telegram_id":       tgData.Id,
 		"language_code":     tgData.LanguageCode,
 	}
+
+	form.app.Logger().Info("SubmitWithTelegramData: form.CreateData %s", slog.Any("createData", form.CreateData))
 
 	return form.submitWithAuthUser(&authUser, beforeCreateFuncs...)
 }

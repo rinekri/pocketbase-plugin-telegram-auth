@@ -23,7 +23,7 @@ func main() {
 	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		// serves static files from the provided public dir (if exists)
 		e.Router.GET("/*", apis.Static(os.DirFS("./tg_webapp/dist"), true))
-		return nil
+		return e.Next()
 	})
 
 	if err := app.Start(); err != nil {

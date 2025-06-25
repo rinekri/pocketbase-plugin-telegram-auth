@@ -104,6 +104,7 @@ func Register(app core.App, options *Options) (*PluginContext, error) {
 
 	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		e.Router.POST(
+			// TODO: Rmove collection key and collections 
 			"/api/collections/"+p.options.CollectionKey+"/auth-with-telegram",
 			p.AuthHandler,
 		)
